@@ -47,26 +47,49 @@ clay= Material(difuse=(1,1,1),specular=0.99,type=DIFUSE , texture=clayTextureFil
 
 
 
-materials= [brick,snow,black,carrot, mirror , sun]
+materials= [brick,snow,black,carrot, mirror , sun, metal]
 
 
 myRaytracer.materials = materials
 
-myRaytracer.objects.append( Sphere(position=(-15,5,-25), radius =3, material = sun))
-myRaytracer.objects.append( Sphere(position=(-8,4,-25), radius =2, material = sun))
-myRaytracer.objects.append( Sphere(position=(5,-10,-25), radius =5, material = clay))
 
-# # myRaytracer.objects.append( Plane(position=(-5,0,-50),normal=(1,0,0), material= snow))
+# myRaytracer.objects.append( Sphere(position=(18 ,5,-25), radius =3, material = metal))
+# myRaytracer.objects.append( Sphere(position=(-15,5,-25), radius =3, material = sun))
+# myRaytracer.objects.append( Sphere(position=(-8,4,-25), radius =2, material = sun))
+# myRaytracer.objects.append( Sphere(position=(5,-10,-25), radius =5, material = clay))
 
-myRaytracer.objects.append( Plane(position=(0,-10,-0),normal=(0,1,0), material= clay))
+# # # myRaytracer.objects.append( Plane(position=(-5,0,-50),normal=(1,0,0), material= snow))
 
-myRaytracer.objects.append( Disk(position=(4.5,-10,-20), normal = (0,0,-1) , material= black  ,radius=2))
+# myRaytracer.objects.append( Plane(position=(0,-10,-0),normal=(0,1,0), material= clay))
+
+# myRaytracer.objects.append( Disk(position=(4.5,-10,-20), normal = (0,0,-1) , material= black  ,radius=2))
 
 
-# myRaytracer.objects.append( Disk(position=(13,-9,-25), normal = (-1,0,0) , material= mirror  ,radius=8))
+# myRaytracer.objects.append( Disk(position=(13,-9,-25), normal = (-1,0,0) , material= mirror  ,radius=10))
 
 
 myRaytracer.Lights.append (DirectionalLight(direction=(-0.2,-1,-0.5),intensity=0.4))
+
+myRaytracer.Lights.append (DirectionalLight(direction=(-0.2,-1,2),intensity=1))
+
+
+
+numofspheres = 10
+
+for x in range (numofspheres):
+    minx=-2
+    miny=-2
+    maxx=2
+    maxy=2
+    maxz=-2
+    minz=-7
+    
+    x= random.randint(minx,maxx)
+    y= random.randint(miny,maxy)
+    z= random.randint(minz,maxz)
+    
+    myRaytracer.objects.append( Sphere(position=(x,y,z), radius =random.random(), material = materials[random.randint(0,len(materials)-1)]))
+
 
 
 myRaytracer.rtClear()
