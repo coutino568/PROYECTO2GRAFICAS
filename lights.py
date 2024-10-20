@@ -45,7 +45,9 @@ class DirectionalLight(Light):
          
         direction = vectorAndScalarMultiplication(self.direction, -1)
         reflect = reflectVector(intercept.normal, direction)
+        # print(intercept.point)
         viewDir = subtract(viewPos, intercept.point)
+        # print(viewDir)
         viewDir = normalize(viewDir)
          
         specIntensity = max(0, dotProduct(viewDir,reflect)) ** intercept.obj.material.specular

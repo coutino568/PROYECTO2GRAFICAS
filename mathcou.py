@@ -177,9 +177,20 @@ def normalize(Vector):
     if(len(Vector)==1):
         return Vector[0]
     elif len(Vector)==2:
+        
+        if Vector[0]==0 and Vector[1]==0:
+            return([0,0])
+        
         magnitude= math.sqrt(Vector[0]*Vector[0] +Vector[1]*Vector[1])
         return [Vector[0]/ magnitude, Vector[1]/magnitude]
+    
+    
     elif len(Vector)==3:
+        if Vector[0]==0 and Vector[1]==0 and Vector[2]==0 :
+            return([0,0,0])
+        
+        
+        
         magnitude= math.sqrt(Vector[0]*Vector[0] +Vector[1]*Vector[1] +Vector[2]*Vector[2])
         return [Vector[0]/ magnitude, Vector[1]/magnitude,Vector[2]/magnitude]
     
@@ -203,4 +214,14 @@ def getAreaOfTiangle(A,B,C):
     
     
     return result
+
+
+
+
+# vector1= [ -3 ,18,19]
+# vector2= [4,-5,61]
+
+
+# print(np.array(vector1)*5)
+# print(vectorAndScalarMultiplication(vector1,5))
 

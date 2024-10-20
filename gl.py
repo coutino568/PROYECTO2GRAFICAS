@@ -1,11 +1,20 @@
-
+import time
 from mathcou import *
 from math import tan 
 from lights import *
+from texture import Texture
+
+
+DIFUSE =0
+REFLECTIVE = 1
+TRANSPARENT = 2
+
+
+MAXRECURSION = 10
 
 
 class Raytracer(object):
-    def __init__(self, screen):
+    def __init__(self, screen,envMapFile=None):
         self.screen = screen
         _,_, self.width,self.height = screen.get_rect()
 
@@ -18,7 +27,8 @@ class Raytracer(object):
         self.rtViewport (0,0,self.width,self.height)
         self.rtProjection()
         self.camPosition = [0,0,0]
-        
+        self.envMap = Texture(envMapFile)
+        self.renderedTimes =0 
         
         
     
@@ -63,27 +73,56 @@ class Raytracer(object):
         self.rightEdge = self.topEdge * aspectRatio
         
         
-        
-    def rtCastRay(self, origin, direction, sceneObj=None):
+    ##funcion que genera un rayo y retorna informaicon del objeto contra el que choco
+    def rtCastRay(self, origin, direction, objectOfOrigin=None , recursionIndex=0):
         depth = float ('inf')
         intercept = None
         hit= None
+        newDirection = direction
         for object in self.objects:
-            if sceneObj != object:
+            
+            #solo para no revisar interceptos contigo mismo
+            if object != objectOfOrigin:
                 
-                intercept=  object.ray_intersect(origin,direction)
+                if object.material.type==REFLECTIVE:
+                    currentIntercept=  object.ray_intersect(origin,direction)
                     
+                    if recursionIndex>= MAXRECURSION or currentIntercept== None:
+                        intercept=  currentIntercept
+                        newDirection= direction
+                    else:
+                        invDirection = vectorAndScalarMultiplication(direction,-1)
+                        reflectedDirection = reflectVector(currentIntercept.normal, invDirection)
+                        intercept,newDirection = self.rtCastRay(currentIntercept.point,reflectedDirection,currentIntercept.obj,recursionIndex+1)
+                        
+                
+                elif object.material.type==DIFUSE:
+                    intercept=  object.ray_intersect(origin,direction)
+                
+                
+                
+                
+                
+                
+                
+                ##es un z buffer 
+                # print(intercept)
                 if intercept != None:
                     if intercept.distance < depth:
+                        
                         hit = intercept
                         depth=intercept.distance
                     
-        return hit
+        return hit,newDirection
         
         
        
         
     def rtRender(self):
+        
+        if self.renderedTimes>=1:
+            return
+        start = time.time()
         
         for x in range(self.vpX, self.vpX+self.vpWidth+1):
             for y in range(self.vpY, self.vpY+self.vpHeigth+1):
@@ -96,17 +135,30 @@ class Raytracer(object):
                     
                     direction = normalize((px,py, -self.nearPlane))
                     
-                    intercept = self.rtCastRay(self.camPosition,direction)
+                    intercept,newDirection = self.rtCastRay(self.camPosition,direction,recursionIndex=0)
                     
-                        # print("dibujare pues")
+                    # si no hay intercepto o se paso de los rebotes maximos, jalar la informacion del env map
                     if intercept != None:
+                        
+                        if intercept.obj.material.texture != None:
+                            # intercept.texcoords
+                            # print(intercept.texcoords)
+                            surfaceColor = intercept.obj.material.texture.getColor(intercept.texcoords[0],intercept.texcoords[1])
+                            # print(intercept.obj.material.texture)
                             
-                        surfaceColor = intercept.obj.material.difuse
+                        else:
+                            surfaceColor = intercept.obj.material.difuse
                         
                         ambientLightColor = [0,0,0]
                         diffuselightColor = [0,0,0]
                         specularLightColor = [0,0,0]
+                        
+                        
+                        # if intercept.obj.material.type == REFLECTIVE:
+                        #     # finalColor= [1,0,1]
                             
+                        #     self.rtPoint(x,y,finalColor)
+                        #     break
                             
                         for light in self.Lights:
                             if light.LightType == "Ambient":
@@ -147,9 +199,29 @@ class Raytracer(object):
                                           min(1,surfaceColor[1] * lightColor[1]),
                                           min(1,surfaceColor[1] * lightColor[2])
                                           ]
+                            
+                            if intercept.obj.material == self.materials[5] : 
+                                finalColor= surfaceColor
                             # elif light.LightType =="Directional":
                             self.rtPoint(x,y,finalColor)
                     
+                    ##en caso que ya haya rebotado el maximo numero o en caso que no intercepte nada
+                    ##va a usar la infromacion del env map
+                    else:
+                        if self.envMap != None:
+                            if newDirection !=None:
+                                envcolor = self.envMap.getColorSphere(newDirection)
+                            else:
+                                envcolor = self.envMap.getColorSphere(direction)
+                                
+                        else:
+                            envcolor=[0,0.50,0.9]
+                        self.rtPoint(x,y,envcolor)
+                        
+        end= time.time()
+        self.renderedTimes = self.renderedTimes+1
+        timeTaken= round(end-start, 2)
+        print("\nDONE RENDERING IN "+ str(timeTaken) + " SECONDS\n")
                 
         
         

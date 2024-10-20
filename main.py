@@ -2,7 +2,7 @@
 import pygame
 import random
 from gl import Raytracer
-from shapes import Sphere , Plane
+from shapes import Sphere , Plane, Disk , AABB
 from lights import *
 from materials import *
 
@@ -17,79 +17,59 @@ screen = pygame.display.set_mode((width, height))
 clock = pygame.time.Clock()
 running = True
 
-
+envMapFile = "env4.bmp"
+metalTexture="metal.bmp"
+waveTexture="env4.bmp"
+snowTextureFile="snow.bmp"
+clayTextureFile = "clay.bmp"
+brickTextureFile = "bricks.bmp"
 # pixels= [[self.bgColor for x in range(self.width)] for y in range(self.height)]
 
-myRaytracer =  Raytracer(screen)
+myRaytracer =  Raytracer(screen,envMapFile)
 myRaytracer.rtClearColor(0.09,0.2,0.5)
 
-brick = Material(difuse = (0.5,0.1,0),specular=0.2)
-snow= Material(difuse=(0.8,0.8,0.8),specular=0.99)
-black= Material(difuse=(0.1,0.1,0.1),specular=0.5)
-carrot = Material(difuse=(0.9,0.5,0.2), specular=0.5)
+DIFUSE =0
+REFLECTIVE = 1
+TRANSPARENT = 2
 
-materials= [brick,snow,black,carrot]
+brick = Material(difuse = (0.5,0.1,0),specular=0.2,type=DIFUSE ,texture= brickTextureFile)
+snow= Material(difuse=(1,1,1),specular=0.99,type=DIFUSE , texture=snowTextureFile)
+water= Material(difuse=(1,1,1),specular=0.99,type=DIFUSE , texture=waveTexture)
+black= Material(difuse=(0.1,0.1,0.1),specular=0.5,type=DIFUSE)
+carrot = Material(difuse=(0.9,0.5,0.2), specular=0.5,type=DIFUSE)
+mirror = Material(difuse=(0.9,0.5,0.2), specular=0.5,type=REFLECTIVE)
+metal = Material(difuse=(0.9,0.5,0.2), specular=0.5,type=DIFUSE, texture=metalTexture)
+black = Material(difuse=(0,0,0,),specular=0.5,type=DIFUSE)
+sun = Material(difuse= (224/255, 166/255, 58/255), specular=0.5 ,type=DIFUSE)
 
-#Esferas de cuerpo
-
-myRaytracer.objects.append(Plane (position=(0,0,0) , normal=(0,1,0), material=snow))
-
-# myRaytracer.objects.append( Sphere(position=(0,-2,-7), radius =1.5, material = snow))
-# myRaytracer.objects.append( Sphere(position=(0,0.5,-7), radius =1, material = snow))
-# myRaytracer.objects.append( Sphere(position=(0,2,-7), radius =0.7, material = snow))
-
-
-# #botones
-# myRaytracer.objects.append( Sphere(position=(0,-1,-4), radius =0.15, material = black))
-# myRaytracer.objects.append( Sphere(position=(0,0,-4), radius =0.15, material = black))
-# myRaytracer.objects.append( Sphere(position=(0,0.5,-4), radius =0.15, material = black))
-
-
-# #esferas de la cara
-# myRaytracer.objects.append( Sphere(position=(0,1.1,-4), radius =0.1, material = carrot))
-# myRaytracer.objects.append( Sphere(position=(-0.1,1.3,-4), radius =0.05, material = black))
-# myRaytracer.objects.append( Sphere(position=(0.1,1.3,-4), radius =0.05, material = black))
-
-
-
-# myRaytracer.objects.append( Sphere(position=(0.1,0.99,-4.1), radius =0.03, material = black))
-# myRaytracer.objects.append( Sphere(position=(0.19,1.1,-4.1), radius =0.03, material = black))
-
-# myRaytracer.objects.append( Sphere(position=(-0.1,0.99,-4.1), radius =0.03, material = black))
-# myRaytracer.objects.append( Sphere(position=(-0.19,1.1,-4.1), radius =0.03, material = black))
+clay= Material(difuse=(1,1,1),specular=0.99,type=DIFUSE , texture=clayTextureFile)
 
 
 
 
-numofspheres = 30
-
-# for x in range (numofspheres):
-#     minx=-2
-#     miny=-2
-#     maxx=2
-#     maxy=2
-#     maxz=-2
-#     minz=-7
-    
-#     x= random.randint(minx,maxx)
-#     y= random.randint(miny,maxy)
-#     z= random.randint(minz,maxz)
-    
-#     myRaytracer.objects.append( Sphere(position=(x,y,z), radius =random.random(), material = materials[random.randint(0,len(materials)-1)]))
+materials= [brick,snow,black,carrot, mirror , sun]
 
 
-# myRaytracer.objects.append( Sphere(position=(3,0,-5), radius =1.5, material = brick))
-# myRaytracer.objects.append( Sphere(position=(-2,0,-5), radius =1.5, material = brick))
+myRaytracer.materials = materials
 
-# myRaytracer.Lights.append( AmbientLight(intensity = 0.1))
-myRaytracer.Lights.append (DirectionalLight(direction=(-0.9,-1,-2),intensity=0.4))
+myRaytracer.objects.append( Sphere(position=(-15,5,-25), radius =3, material = sun))
+myRaytracer.objects.append( Sphere(position=(-8,4,-25), radius =2, material = sun))
+myRaytracer.objects.append( Sphere(position=(5,-10,-25), radius =5, material = clay))
+
+# # myRaytracer.objects.append( Plane(position=(-5,0,-50),normal=(1,0,0), material= snow))
+
+myRaytracer.objects.append( Plane(position=(0,-10,-0),normal=(0,1,0), material= clay))
+
+myRaytracer.objects.append( Disk(position=(4.5,-10,-20), normal = (0,0,-1) , material= black  ,radius=2))
 
 
-# myRaytracer.Lights.append (PointLight(point = (0,0,-5),intensity=1, decayEffect=0.9) )
-# myRaytracer.Lights.append (PointLight(point = (0,0,-5),intensity=1, decayEffect=0.9) )
+# myRaytracer.objects.append( Disk(position=(13,-9,-25), normal = (-1,0,0) , material= mirror  ,radius=8))
 
 
+myRaytracer.Lights.append (DirectionalLight(direction=(-0.2,-1,-0.5),intensity=0.4))
 
+
+myRaytracer.rtClear()
 while running:
    
     for event in pygame.event.get():
@@ -100,23 +80,14 @@ while running:
                 running = False
 
    
-    # screen.fill("black")
-    # pygame.draw.circle(screen, "white", [width/2, height/2] , 40)
-
-    myRaytracer.rtClear()
-    
-    # myRaytracer.rtPoint(random.randint(0,width),random.randint(0,height),(1,1,0))
-    
+   
     time= pygame.time.get_ticks()
-    # print(time)
+    
     factor=6
-    # for light in myRaytracer.Lights:
-    #     if light.LightType =="Directional":  
-    #         movement = [math.sin(time)/factor,0,0]
-    #         light.moveObject(movement)
+   
     myRaytracer.rtRender()
     pygame.display.flip()
-
+    
     # clock.tick(60) 
 
 pygame.quit()
